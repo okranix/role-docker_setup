@@ -9,6 +9,8 @@
     gpgkey:
       - https://download.docker.com/linux/rhel/gpg
     gpgcheck: true
+  become: true
+  become_user: root
 
 - name: Install docker
   ansible.builtin.dnf:
@@ -19,9 +21,124 @@
       - docker-buildx-plugin
       - docker-compose-plugin
     state: present
+  become: true
+  become_user: root
 
 - name: Start and enable docker
   ansible.builtin.systemd:
     name: docker
     state: started
     enabled: true
+  become: true
+  become_user: root
+
+- name: Ensure sudo package is available
+  ansible.builtin.package:
+    name: sudo
+    state: present
+  become: true
+  become_user: root
+
+- name: Ensure docker group exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+  become: true
+  become_user: root
+
+- name: Deploy docker user
+  ansible.builtin.user:
+    name: "{{ docker_setup_username }}"
+    comment: "{{ docker_setup_comment }}"
+    group: "{{ docker_setup_groupname }}"
+    groups:
+      - docker
+    create_home: true
+    password: "!"
+  ignore_errors: "{{ ansible_check_mode }}"
+  become: true
+  become_user: root
+
+- name: Get home directory of docker_setup user
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ docker_setup_username }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Set home directory var for docker_setup user
+  ansible.builtin.set_fact:
+    docker_setup_home: "{{ getent_passwd[docker_setup_username][4] }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Ensure secure home dir permissions
+  ansible.builtin.file:
+    path: "{{ docker_setup_home }}"
+    state: directory
+    owner: "{{ docker_setup_username }}"
+    group: "{{ docker_setup_groupname }}"
+    mode: '0750'
+  ignore_errors: "{{ ansible_check_mode }}"
+  become: true
+  become_user: root
+
+- name: Add authorized keys for docker_setup user
+  ansible.posix.authorized_key:
+    user: "{{ docker_setup_username }}"
+    state: present
+    key: "{{ item }}"
+  loop: "{{ docker_setup_ssh_keys_present }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  become: true
+  become_user: root
+
+- name: Remove authorized keys for docker_setup user
+  ansible.posix.authorized_key:
+    user: "{{ docker_setup_username }}"
+    state: absent
+    key: "{{ item }}"
+  loop: "{{ docker_setup_ssh_keys_absent }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  become: true
+  become_user: root
+
+- name: Ensure /etc/sudoers.d/ exists
+  ansible.builtin.file:
+    path: "/etc/sudoers.d/"
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  become_user: root
+
+- name: Configure sudo for docker_setup user
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/{{ docker_setup_username }}"
+    content: "{{ docker_setup_username }} ALL=(ALL) NOPASSWD:ALL"
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s
+  become: true
+  become_user: root
+
+- name: Setup the directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ docker_setup_username }}"
+    group: docker
+    mode: "0770"
+  loop:
+    - "{{ docker_setup_home }}/docker/appdata"
+    - "{{ docker_setup_home }}/docker/logs"
+  ignore_errors: "{{ ansible_check_mode }}"
+  become: true
+  become_user: root
+
+- name: Setup docker secret directory
+  ansible.builtin.file:
+    path: /home/{{ docker_setup_username }}/secrets
+    state: directory
+    owner: root
+    group: root
+    mode: "0600"
+  become: true
+  become_user: root

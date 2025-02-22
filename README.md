@@ -11,7 +11,13 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+| Name                         | Comment                                                   | Default value  |
+|------------------------------|-----------------------------------------------------------|----------------|
+| docker_setup_username        | Username of the docker_setup user                         | `ansible`      |
+| docker_setup_comment         | Comment for the docker_setup user                         | `Ansible User` |
+| docker_setup_groupname       | Name of the docker_setup user group                       | `ansible`      |
+| docker_setup_ssh_keys_present| A list of SSH keys to be present for the docker_setup user| `[]`           |
+| docker_setup_ssh_keys_absent | A list of SSH keys to be absent for the docker_setup user | `[]`           |
 
 Dependencies
 ------------
@@ -21,10 +27,10 @@ A list of other roles hosted on Galaxy should go here, plus any details in regar
 Example Playbook
 ----------------
 
-    - name: docker_setup
-      hosts: EL
+    - name: Docker setup
+      hosts: docker_hosts
       roles:
-        - role: docker_setup
+        - role: role-docker_setup
 
 License
 -------
