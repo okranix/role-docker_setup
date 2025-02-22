@@ -1,3 +1,27 @@
-#SPDX-License-Identifier: MIT-0
 ---
 # tasks file for role-docker_setup
+
+- name: Set up the docker repository
+  ansible.builtin.yum_repository:
+    name: Docker CE Stable - x86_64
+    description: Docker CE Stable - x86_64
+    baseurl: https://download.docker.com/linux/rhel/$releasever/$basearch/stable
+    gpgkey:
+      - https://download.docker.com/linux/rhel/gpg
+    gpgcheck: true
+
+- name: Install docker
+  ansible.builtin.dnf:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+
+- name: Start and enable docker
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true

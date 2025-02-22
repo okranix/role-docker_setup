@@ -1,7 +1,7 @@
-Role Name
+docker_setup
 =========
 
-A brief description of the role goes here.
+Sets up docker with my desired user and directory structure.
 
 Requirements
 ------------
@@ -21,18 +21,12 @@ A list of other roles hosted on Galaxy should go here, plus any details in regar
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
+    - name: docker_setup
+      hosts: EL
       roles:
-         - { role: username.rolename, x: 42 }
+        - role: docker_setup
 
 License
 -------
 
 BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
