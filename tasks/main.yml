@@ -3,7 +3,7 @@
 
 - name: Set up the docker repository
   ansible.builtin.yum_repository:
-    name: Docker CE Stable - x86_64
+    name: docker-ce-stable
     description: Docker CE Stable - x86_64
     baseurl: https://download.docker.com/linux/rhel/$releasever/$basearch/stable
     gpgkey:
