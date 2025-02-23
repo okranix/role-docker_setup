@@ -132,13 +132,3 @@
   ignore_errors: "{{ ansible_check_mode }}"
   become: true
   become_user: root
-
-- name: Setup docker secret directory
-  ansible.builtin.file:
-    path: /home/{{ docker_setup_username }}/secrets
-    state: directory
-    owner: root
-    group: root
-    mode: "0600"
-  become: true
-  become_user: root
