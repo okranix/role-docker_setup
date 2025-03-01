@@ -76,7 +76,7 @@
     state: directory
     owner: "{{ docker_setup_username }}"
     group: "{{ docker_setup_groupname }}"
-    mode: '0750'
+    mode: "0750"
   ignore_errors: "{{ ansible_check_mode }}"
   become: true
   become_user: root
